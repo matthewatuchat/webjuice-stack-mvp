@@ -1,8 +1,9 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
 
 interface Env {
-  EMAIL: any;
+  RESEND_API_KEY: string;
   NOTIFICATION_EMAIL?: string;
+  FROM_EMAIL?: string;
 }
 
 interface ContactForm {
@@ -24,27 +25,44 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Store in D1 or KV (optional - add later when D1 is set up)
-    // For now, just send email notification
+    const notificationEmail = context.env.NOTIFICATION_EMAIL || 'hello@fengtalk.ai';
+    const fromEmail = context.env.FROM_EMAIL || 'WebJuice <hello@fengtalk.ai>';
 
-    const notificationEmail = context.env.NOTIFICATION_EMAIL || 'hello@webjuice.com';
-
-    await context.env.EMAIL.send({
-      to: notificationEmail,
-      from: notificationEmail,
-      subject: `New contact form submission from ${name}`,
-      text: `Name: ${name}
+    // Send notification via Resend
+    const resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${context.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: notificationEmail,
+        subject: `New contact form: ${name}`,
+        text: `Name: ${name}
 Email: ${email}
 Company: ${company || 'N/A'}
 Message:
 ${message}`,
+        reply_to: email,
+      }),
     });
+
+    if (!resendRes.ok) {
+      const err = await resendRes.text();
+      console.error('Resend error:', err);
+      return new Response(JSON.stringify({ error: 'Failed to send notification' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
+    console.error('Contact form error:', err);
     return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
