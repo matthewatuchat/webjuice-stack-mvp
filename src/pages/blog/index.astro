@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { fetchPosts, extractTextFromLexical } from '../../lib/payload.ts'
+
+const posts = await fetchPosts()
+---
+
+<Layout title="Blog — WebJuice" description="Latest posts from the WebJuice stack.">
+  <div class="max-w-5xl mx-auto px-6 py-20">
+    <a href="/" class="text-sm text-slate-500 hover:text-slate-800 mb-8 inline-block">← Back home</a>
+    <h1 class="text-3xl font-bold tracking-tight mb-8">Blog</h1>
+    <div class="space-y-8">
+      {posts.map((post: any) => (
+        <article class="border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
+          <a href={`/blog/${post.slug}/`} class="block">
+            <h2 class="text-xl font-semibold mb-2">{post.title}</h2>
+            {post.excerpt && <p class="text-slate-600 mb-3">{post.excerpt}</p>}
+            {post.publishedDate && (
+              <p class="text-sm text-slate-400">
+                {new Date(post.publishedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            )}
+          </a>
+        </article>
+      ))}
+      {posts.length === 0 && (
+        <p class="text-slate-500">No posts published yet.</p>
+      )}
+    </div>
+  </div>
+</Layout>
