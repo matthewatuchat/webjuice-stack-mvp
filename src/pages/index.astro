@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
 import { getCollection } from 'astro:content';
 
 const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -8,11 +9,11 @@ const latestPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
 const latestCases = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
 ---
 
-<Layout title="WebJuice - B2B Website Stack">
+<Layout title={`${siteConfig.name} - ${siteConfig.tagline}`}>
   <section class="py-16 text-center">
-    <h1 class="text-5xl font-bold tracking-tight mb-6">Fast Websites for B2B Companies</h1>
+    <h1 class="text-5xl font-bold tracking-tight mb-6">{siteConfig.tagline}</h1>
     <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
-      Astro + Cloudflare stack. No WordPress. No plugins breaking at 2 AM. Just fast, secure, automated websites.
+      {siteConfig.description}
     </p>
     <div class="flex justify-center gap-4">
       <a href="/contact" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800">Get in Touch</a>
@@ -42,7 +43,7 @@ const latestCases = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDa
       {latestCases.map(c => (
         <a href={`/cases/${c.slug}`} class="group block p-6 border border-gray-100 rounded-lg hover:border-gray-300">
           <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.data.industry}</span>
-          <h3 class="font-semibold text-lg group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h3>
+          <h3 class="text-xl font-semibold group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h3>
           <p class="text-gray-600 text-sm">{c.data.description}</p>
         </a>
       ))}
