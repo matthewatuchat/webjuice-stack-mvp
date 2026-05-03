@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import '../styles/global.css';
+import { fetchPosts } from '../lib/payload.ts';
+
+const posts = await fetchPosts();
 
 const stackItems = [
   { name: 'Astro', role: 'Static site framework', desc: 'Fast pages, clean HTML, minimal JavaScript' },
@@ -36,7 +39,10 @@ const newResults = [
   <nav class="border-b border-slate-100">
     <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="font-bold text-lg tracking-tight">WebJuice</div>
-      <div class="text-sm text-slate-500">AI-Controlled Stack MVP</div>
+      <div class="flex items-center gap-6">
+        <a href="/blog/" class="text-sm text-slate-600 hover:text-slate-900">Blog</a>
+        <span class="text-sm text-slate-400">AI-Controlled Stack MVP</span>
+      </div>
     </div>
   </nav>
 
@@ -107,6 +113,32 @@ const newResults = [
           <p class="text-sm text-slate-700">{item.desc}</p>
         </div>
       ))}
+    </div>
+  </section>
+
+  <!-- Latest from CMS -->
+  <section class="bg-slate-50 py-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold">Latest from the Blog</h2>
+        <a href="/blog/" class="text-sm font-medium text-slate-600 hover:text-slate-900">View all →</a>
+      </div>
+      <div class="space-y-4">
+        {posts.map((post: any) => (
+          <a href={`/blog/${post.slug}/`} class="block bg-white border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
+            <h3 class="font-semibold mb-1">{post.title}</h3>
+            {post.excerpt && <p class="text-sm text-slate-600">{post.excerpt}</p>}
+            {post.publishedDate && (
+              <p class="text-xs text-slate-400 mt-2">
+                {new Date(post.publishedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            )}
+          </a>
+        ))}
+        {posts.length === 0 && (
+          <p class="text-slate-500">No posts published yet. Content is managed in Payload CMS.</p>
+        )}
+      </div>
     </div>
   </section>
 
