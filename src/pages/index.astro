@@ -1,184 +1,51 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import '../styles/global.css';
-import { fetchPosts } from '../lib/payload.ts';
+import { getCollection } from 'astro:content';
 
-const posts = await fetchPosts();
-
-const stackItems = [
-  { name: 'Astro', role: 'Static site framework', desc: 'Fast pages, clean HTML, minimal JavaScript' },
-  { name: 'Tailwind CSS', role: 'Styling', desc: 'Direct control, no page builder bloat' },
-  { name: 'Cloudflare', role: 'Edge delivery', desc: 'DNS, caching, security, global speed' },
-  { name: 'GitHub', role: 'Version control', desc: 'Every change tracked and reviewable' },
-  { name: 'Payload CMS', role: 'Content layer', desc: 'CMS control without WordPress bloat' },
-  { name: 'Coolify', role: 'Self-hosting', desc: 'Run tools internally, keep costs low' },
-  { name: 'Claude + GPT', role: 'AI coding', desc: 'Structured coding, debugging, review' },
-  { name: 'Hermes', role: 'Agent OS', desc: 'Connects agents, tools, and decisions' },
-];
-
-const oldProblems = [
-  'WordPress + Elementor drag-and-drop friction',
-  'Plugin updates breaking things constantly',
-  'Slow page loads from bloated theme code',
-  'No version control — changes lost in the admin panel',
-  'Theme limits blocking custom designs',
-];
-
-const newResults = [
-  'Faster loading with static generation',
-  'Cleaner code, fewer dependencies',
-  'Lower running costs',
-  'Easier SEO improvements',
-  'Better Core Web Vitals',
-  'Less maintenance overhead',
-];
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const cases = await getCollection('cases', ({ data }) => !data.draft);
+const latestPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+const latestCases = cases.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
 ---
 
-<Layout>
-  <!-- Navigation -->
-  <nav class="border-b border-slate-100">
-    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="font-bold text-lg tracking-tight">WebJuice</div>
-      <div class="flex items-center gap-6">
-        <a href="/blog/" class="text-sm text-slate-600 hover:text-slate-900">Blog</a>
-        <span class="text-sm text-slate-400">AI-Controlled Stack MVP</span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <section class="max-w-5xl mx-auto px-6 pt-20 pb-16">
-    <div class="max-w-3xl">
-      <p class="text-sm font-medium text-slate-500 uppercase tracking-wide mb-4">Case Study / Stack Architecture</p>
-      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-6">
-        Why We Replaced WordPress With an AI-Controlled Website Stack
-      </h1>
-      <p class="text-lg text-slate-600 leading-relaxed mb-8">
-        After 15 years working with WordPress, we moved our agency website away from it. 
-        Not because WordPress is bad — because the old stack had become too slow, too bloated, too manual.
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <span class="px-3 py-1.5 bg-slate-900 text-white text-sm font-medium rounded-full">Astro</span>
-        <span class="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">Tailwind</span>
-        <span class="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">Cloudflare</span>
-        <span class="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full">AI Agents</span>
-      </div>
+<Layout title="WebJuice - B2B Website Stack">
+  <section class="py-16 text-center">
+    <h1 class="text-5xl font-bold tracking-tight mb-6">Fast Websites for B2B Companies</h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
+      Astro + Cloudflare stack. No WordPress. No plugins breaking at 2 AM. Just fast, secure, automated websites.
+    </p>
+    <div class="flex justify-center gap-4">
+      <a href="/contact" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800">Get in Touch</a>
+      <a href="/cases" class="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50">View Cases</a>
     </div>
   </section>
 
-  <!-- The Problem -->
-  <section class="bg-slate-50 py-16">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="grid md:grid-cols-2 gap-12 items-start">
-        <div>
-          <h2 class="text-2xl font-bold mb-4">The Old Setup</h2>
-          <p class="text-slate-600 mb-6">What used to be normal. It no longer matches how modern agencies want to work.</p>
-          <ul class="space-y-3">
-            {oldProblems.map(item => (
-              <li class="flex items-start gap-3 text-slate-700">
-                <span class="text-red-400 mt-1">×</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h2 class="text-2xl font-bold mb-4">What We Wanted</h2>
-          <p class="text-slate-600 mb-6">A website that is faster, cleaner, cheaper to run, and easier to control with AI.</p>
-          <div class="bg-white border border-slate-200 rounded-lg p-6">
-            <p class="text-sm font-medium text-slate-500 mb-3">The goal:</p>
-            <p class="text-slate-800 leading-relaxed">
-              Keep content manageable, but keep the frontend fast and clean. 
-              The website is no longer just a CMS. It is proper software.
-            </p>
-          </div>
-        </div>
-      </div>
+  <section class="py-16 border-t border-gray-100">
+    <h2 class="text-2xl font-bold mb-8">Latest Posts</h2>
+    <div class="grid gap-8 md:grid-cols-3">
+      {latestPosts.map(post => (
+        <a href={`/blog/${post.slug}`} class="group block">
+          <h3 class="font-semibold text-lg group-hover:text-gray-600 mb-2">{post.data.title}</h3>
+          <p class="text-gray-600 text-sm line-clamp-2">{post.data.description}</p>
+          <span class="text-xs text-gray-400 mt-2 block">{post.data.pubDate.toLocaleDateString()}</span>
+        </a>
+      ))}
+    </div>
+    <div class="mt-8">
+      <a href="/blog" class="text-sm font-medium underline underline-offset-4">View all posts &rarr;</a>
     </div>
   </section>
 
-  <!-- The Stack -->
-  <section class="max-w-5xl mx-auto px-6 py-20">
-    <h2 class="text-2xl font-bold mb-2">The New Stack</h2>
-    <p class="text-slate-600 mb-10">Twelve components. Fewer moving parts. Better systems.</p>
-    
-    <div class="grid sm:grid-cols-2 gap-4">
-      {stackItems.map((item, i) => (
-        <div class="border border-slate-200 rounded-lg p-5 hover:border-slate-300 transition-colors">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="text-xs font-mono text-slate-400">{String(i + 1).padStart(2, '0')}</span>
-            <h3 class="font-semibold">{item.name}</h3>
-          </div>
-          <p class="text-sm text-slate-500 mb-1">{item.role}</p>
-          <p class="text-sm text-slate-700">{item.desc}</p>
-        </div>
+  <section class="py-16 border-t border-gray-100">
+    <h2 class="text-2xl font-bold mb-8">Recent Cases</h2>
+    <div class="grid gap-8 md:grid-cols-2">
+      {latestCases.map(c => (
+        <a href={`/cases/${c.slug}`} class="group block p-6 border border-gray-100 rounded-lg hover:border-gray-300">
+          <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.data.industry}</span>
+          <h3 class="font-semibold text-lg group-hover:text-gray-600 mt-2 mb-2">{c.data.title}</h3>
+          <p class="text-gray-600 text-sm">{c.data.description}</p>
+        </a>
       ))}
     </div>
   </section>
-
-  <!-- Latest from CMS -->
-  <section class="bg-slate-50 py-16">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-bold">Latest from the Blog</h2>
-        <a href="/blog/" class="text-sm font-medium text-slate-600 hover:text-slate-900">View all →</a>
-      </div>
-      <div class="space-y-4">
-        {posts.map((post: any) => (
-          <a href={`/blog/${post.slug}/`} class="block bg-white border border-slate-200 rounded-lg p-6 hover:border-slate-300 transition-colors">
-            <h3 class="font-semibold mb-1">{post.title}</h3>
-            {post.excerpt && <p class="text-sm text-slate-600">{post.excerpt}</p>}
-            {post.publishedDate && (
-              <p class="text-xs text-slate-400 mt-2">
-                {new Date(post.publishedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-            )}
-          </a>
-        ))}
-        {posts.length === 0 && (
-          <p class="text-slate-500">No posts published yet. Content is managed in Payload CMS.</p>
-        )}
-      </div>
-    </div>
-  </section>
-
-  <!-- Results -->
-  <section class="bg-slate-900 text-white py-16">
-    <div class="max-w-5xl mx-auto px-6">
-      <h2 class="text-2xl font-bold mb-8">The Result</h2>
-      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {newResults.map(item => (
-          <div class="bg-slate-800 rounded-lg p-4">
-            <span class="text-emerald-400 mr-2">✓</span>
-            <span class="text-sm">{item}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- Why It Matters -->
-  <section class="max-w-5xl mx-auto px-6 py-20">
-    <div class="max-w-3xl">
-      <h2 class="text-2xl font-bold mb-4">Why This Matters</h2>
-      <p class="text-slate-600 leading-relaxed mb-6">
-        This is not the right stack for every business. But for us, it makes much more sense than WordPress.
-      </p>
-      <p class="text-slate-600 leading-relaxed mb-6">
-        Most websites do not need more plugins. They need fewer moving parts. They need cleaner architecture. 
-        They need systems that can be improved every week without breaking.
-      </p>
-      <p class="text-slate-800 font-medium">
-        The future is not more plugins. It is fewer moving parts and better systems.
-      </p>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="border-t border-slate-100 py-8">
-    <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
-      <p class="text-sm text-slate-500">MVP based on webjuice.ie stack architecture</p>
-      <p class="text-sm text-slate-400">Built with Astro + Tailwind + Cloudflare</p>
-    </div>
-  </footer>
 </Layout>
