@@ -1,26 +1,41 @@
 ---
 interface Props {
-	title?: string;
-	description?: string;
+  title: string;
+  description?: string;
 }
 
-const { title = 'WebJuice — AI-Controlled Website Stack', description = 'We replaced WordPress with a modern, AI-controlled website stack. Faster, cleaner, cheaper to run.' } = Astro.props;
+const { title, description = 'WebJuice - B2B Website Stack' } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
-		<title>{title}</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-	</head>
-	<body class="font-['Inter'] antialiased text-slate-900 bg-white">
-		<slot />
-	</body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+</head>
+<body class="bg-white text-gray-900 antialiased">
+  <nav class="border-b border-gray-100">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold tracking-tight">WebJuice</a>
+      <div class="flex gap-6 text-sm font-medium">
+        <a href="/" class="hover:text-gray-600">Home</a>
+        <a href="/blog" class="hover:text-gray-600">Blog</a>
+        <a href="/cases" class="hover:text-gray-600">Cases</a>
+        <a href="/contact" class="hover:text-gray-600">Contact</a>
+      </div>
+    </div>
+  </nav>
+  
+  <main class="max-w-4xl mx-auto px-6 py-12">
+    <slot />
+  </main>
+  
+  <footer class="border-t border-gray-100 mt-20">
+    <div class="max-w-4xl mx-auto px-6 py-8 text-sm text-gray-500">
+      &copy; {new Date().getFullYear()} WebJuice. Built with Astro + Cloudflare.
+    </div>
+  </footer>
+</body>
 </html>
