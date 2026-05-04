@@ -1,6 +1,15 @@
 # WebJuice Stack MVP
 
-B2B 公司官网全栈。Astro + Cloudflare，无数据库、无 WordPress、全部自动化。
+B2B 公司官网批量生产模板。Astro + Cloudflare，无数据库、无 WordPress、一键创建新客户站。
+
+---
+
+## 核心特性
+
+- **批量复制**：一键生成新客户的独立 repo + Pages 项目 + 域名绑定
+- **品牌配置化**：所有客户信息集中在 `src/config/site.ts`，一键替换
+- **零月费**：Cloudflare Pages + Resend 免费额度完全够用
+- **全自动部署**：GitHub Actions + Wrangler，无需 Dashboard 点击
 
 ---
 
@@ -8,82 +17,115 @@ B2B 公司官网全栈。Astro + Cloudflare，无数据库、无 WordPress、全
 
 | 层级 | 技术 | 用途 | 费用 |
 |------|------|------|------|
-| 前端 | Astro + Tailwind | 静态站点生成 | $0 |
-| 内容 | Content Collections | Markdown 博客/案例/页面 | $0 |
+| 前端 | Astro + Tailwind | 静态站点 | $0 |
+| 内容 | Content Collections | Markdown 博客/案例 | $0 |
 | 托管 | Cloudflare Pages | 构建+部署+CDN | $0 |
-| 表单 | Pages Functions | 联系表单处理 | $0 |
-| 邮件发送 | Resend | 表单通知/交易邮件 | $0 (3000封/月) |
-| 邮件接收 | Cloudflare Email Routing | 收邮件转发 | $0 |
-| 版本 | GitHub | 代码+内容+CI 触发 | $0 |
+| 表单 | Pages Functions | 联系表单 | $0 |
+| 邮件发送 | Resend | 表单通知 | $0 (3000封/月) |
+| 邮件接收 | Cloudflare Email Routing | 转发 | $0 |
+| CI/CD | GitHub Actions + Wrangler | 自动部署 | $0 |
 
 **总月费：$0**
 
 ---
 
-## 邮件架构：两阶段设计
+## 快速开始
+
+### 1. 克隆模板
+
+```bash
+git clone https://github.com/matthewatuchat/webjuice-stack-mvp.git
+cd webjuice-stack-mvp
+npm install
+npm run dev
+```
+
+浏览器打开 `http://localhost:4321`。
+
+### 2. 配置环境变量
+
+复制 `.env.example` 为 `.env`，填入你的 token：
+
+```bash
+# GitHub Personal Access Token (需要 repo 和 workflow 权限)
+GH_PAT=github_pat_xxx
+
+# Cloudflare API Token (需要 Account:Read, Pages:Edit, DNS:Edit)
+CF_API_TOKEN=xxx
+CF_ACCOUNT_ID=2b67d2288df946ac22f408b60a9bcc11
+
+# Resend (用于客户邮件域名升级，可选)
+RESEND_MASTER_KEY=re_xxx
+```
+
+### 3. 把此 repo 设为 GitHub Template
+
+进入 [repo Settings](https://github.com/matthewatuchat/webjuice-stack-mvp/settings) → General → 勾选 **Template repository**。
+
+这是一次性设置，之后所有新客户站都从这个模板生成。
+
+---
+
+## 一键创建新客户站
+
+```bash
+node scripts/new-client.js \
+  --name "Acme Corp" \
+  --slug acme-website \
+  --domain acme.com \
+  --email hello@acme.com
+```
+
+脚本会自动完成：
+1. 从模板生成新 GitHub repo
+2. 替换 `src/config/site.ts` 中的品牌信息
+3. 创建 Cloudflare Pages 项目
+4. 添加客户自定义域名
+5. 设置 GitHub Actions 变量
+
+**唯一需要手动的步骤**：在新 repo 的 Settings → Secrets 中添加 `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`。
+
+### 输出示例
+
+```
+Repository: https://github.com/matthewatuchat/acme-website
+Pages URL:  https://acme-website.pages.dev
+Custom Domain: acme.com
+
+⚠️  Manual steps required:
+  1. Go to https://github.com/matthewatuchat/acme-website/settings/secrets/actions
+     - Add CLOUDFLARE_API_TOKEN
+     - Add CLOUDFLARE_ACCOUNT_ID
+  2. Tell client to set this DNS record:
+     acme.com  CNAME  acme-website.pages.dev
+  3. Push any change to main branch to trigger first deploy
+```
+
+push 后 GitHub Actions 自动构建并部署到 Cloudflare Pages。
+
+---
+
+## 邮件架构
 
 ### Phase 1 — 默认上线（零配置）
 
-所有客户站默认用你的域名发件，客户零额外操作即可上线。
+所有客户站默认用你的域名发件：
 
 ```
 发件人：WebJuice <hello@fengtalk.ai>
-收件人：客户指定的通知邮箱（如 sales@client.com）
-reply_to：网站访客填写的邮箱
-```
-
-配置：
-- `FROM_EMAIL` = `WebJuice <hello@fengtalk.ai>`
-- `RESEND_API_KEY` = 你的 Resend 主密钥
-- 不需要为客户域名做任何邮件配置
-
-### Phase 2 — 客户品牌升级（自动切换）
-
-客户想用自己的域名发件（如 `hello@client.com`），运行一条命令自动完成切换。
-
-```bash
-node scripts/upgrade-client-email.js client.com
-```
-
-脚本会自动：
-1. 在 Resend 添加客户域名
-2. 获取 SPF/DKIM/DMARC 记录
-3. 在 Cloudflare DNS 自动设置记录
-4. 创建独立 API Key
-5. 输出新的环境变量配置
-
-切换后：
-```
-发件人：Client Name <hello@client.com>
 收件人：客户指定的通知邮箱
 reply_to：网站访客填写的邮箱
 ```
 
----
+### Phase 2 — 客户品牌升级
 
-## 自动化流水线
+客户想用自己域名发件：
 
-### 1. 开发 → 部署
-```
-本地 git push → GitHub → Cloudflare Pages 自动 build → 全球上线（30 秒）
-```
-
-### 2. 内容发布
-```
-写 Markdown 文件 → push 到 src/content/ → 自动构建
-```
-
-### 3. 表单处理
-```用户提交 → Pages Function /api/contact → Resend 发通知 → 到客户邮箱```
-
-### 4. 客户域名上线
 ```bash
-# 站点上线
-node scripts/add-domain.js client.com
-
-# 邮件升级（可选）
 node scripts/upgrade-client-email.js client.com
 ```
+
+自动完成：Resend 添加域名 → Cloudflare DNS 设置 → 创建 scoped API Key → 输出新配置。
 
 ---
 
@@ -91,31 +133,24 @@ node scripts/upgrade-client-email.js client.com
 
 ```
 /
-├── .github/workflows/          # CI/CD 工作流
-├── functions/api/              # Cloudflare Pages Functions
-│   └── contact.ts              # 表单处理 API (Resend)
-├── scripts/                    # 自动化脚本
-│   ├── add-domain.js           # 客户站点域名上线
-│   └── upgrade-client-email.js # 客户邮件域名升级
+├── .github/workflows/
+│   └── deploy.yml           # GitHub Actions + Wrangler 自动部署
+├── functions/api/
+│   └── contact.ts           # 表单处理 (Resend)
+├── scripts/
+│   ├── new-client.js        # 一键创建新客户站
+│   ├── add-domain.js        # 域名上线
+│   └── upgrade-client-email.js # 邮件域名升级
 ├── src/
+│   ├── config/
+│   │   └── site.ts          # 品牌配置（一键替换）
 │   ├── content/
-│   │   ├── blog/             # 博客文章 (Markdown)
-│   │   ├── cases/            # 案例研究 (Markdown)
-│   │   └── config.ts         # 内容 schema 定义
 │   ├── layouts/
-│   │   └── Layout.astro      # 基础布局
 │   └── pages/
-│       ├── index.astro         # 首页
-│       ├── contact.astro       # 联系页面
-│       ├── blog/
-│       │   ├── index.astro       # 博客列表
-│       │   └── [...slug].astro   # 博客详情
-│       └── cases/
-│           ├── index.astro       # 案例列表
-│           └── [...slug].astro   # 案例详情
+├── .env.example
 ├── astro.config.mjs
 ├── package.json
-├── wrangler.toml             # Pages 环境配置
+├── wrangler.toml
 └── tsconfig.json
 ```
 
@@ -132,65 +167,40 @@ npm run preview
 
 ---
 
-## 部署到 Cloudflare Pages
+## 完整工作流
 
-1. Dashboard → Pages → 创建项目 → 连接此 GitHub repo
-2. Build settings 保持默认（Framework: Astro, Build: `npm run build`, Output: `dist`）
-3. 配置环境变量（见下表）
-4. Save and Deploy
-
----
-
-## 环境变量配置
-
-在 Cloudflare Pages Dashboard → 项目 → Settings → Environment variables 中添加：
-
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `RESEND_API_KEY` | Resend API Key (建议设为 Secret) | 必填 |
-| `NOTIFICATION_EMAIL` | 接收表单通知的邮箱 | `hello@fengtalk.ai` |
-| `FROM_EMAIL` | 发件人显示 | `WebJuice <hello@fengtalk.ai>` |
-
-**Phase 2 升级后覆盖：**
-- `FROM_EMAIL` → `Client Name <hello@client.com>`
-- `RESEND_API_KEY` → 客户独立的 scoped API key
-
----
-
-## 客户域名上线
-
-```bash
-export CF_ACCOUNT_ID=2b67d2288df946ac22f408b60a9bcc11
-export CF_API_TOKEN=你的 Cloudflare API Token
-
-# 站点上线
-node scripts/add-domain.js client.com
-
-# 邮件升级（可选，需要 RESEND_MASTER_KEY）
-export RESEND_MASTER_KEY=你的 Resend 主密钥
-node scripts/upgrade-client-email.js client.com
 ```
-
----
-
-## 技术栈对比（vs WordPress）
-
-| | WordPress | WebJuice Stack |
-|---|---|---|
-| 服务器 | VPS/共享主机 | 无（静态文件） |
-| 数据库 | MySQL | 无 |
-| 安全更新 | 插件经常更新 | 无更新需求 |
-| 页面加载 | 200-500ms | <50ms |
-| 部署 | 手动/复杂 CI | Git push 自动部署 |
-| 邮件月费 | SendGrid/SES $10-50+ | **$0** (Resend 免费额度) |
-| 月费总计 | $10-50+ | **$0** |
+你的模板 repo (webjuice-stack-mvp)
+           |
+           v
+node scripts/new-client.js --name "Acme" --slug acme --domain acme.com
+           |
+           v
+    +------+------+
+    |             |
+    v             v
+GitHub repo   Pages 项目
+(acme-website)  (acme-website)
+    |             |
+    v             v
+更改推送     自动部署
+    |             |
+    +------+------+
+           |
+           v
+    https://acme-website.pages.dev
+           |
+           v
+    客户设 CNAME → https://acme.com
+```
 
 ---
 
 ## 待完成
 
+- [ ] 在 GitHub 设置中勾选 "Template repository"
+- [ ] 本地测试 `npm run dev`
+- [ ] 创建第一个测试客户站验证流程
 - [ ] 添加 `@tailwindcss/typography` 优化文章排版
 - [ ] 添加 SEO 组件（sitemap、robots、meta tags）
-- [ ] 接入 AI agent API 到 `ai-content.yml`
-- [ ] 添加 Google Analytics / Plausible 统计
-- [ ] 在 Cloudflare Dashboard 配置 Email Routing（如需要收邮件）
+- [ ] 接入 AI agent 内容生成
