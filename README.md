@@ -69,6 +69,9 @@ npm run dev
 # GitHub Personal Access Token (需要 repo 和 workflow 权限)
 GH_PAT=github_pat_xxx
 
+# Python dependency for secrets encryption
+# pip3 install pynacl
+
 # Cloudflare API Token (需要 Account:Read, Pages:Edit, DNS:Edit)
 CF_API_TOKEN=xxx
 CF_ACCOUNT_ID=2b67d2288df946ac22f408b60a9bcc11
@@ -102,7 +105,7 @@ node scripts/new-client.js \
 4. 添加客户自定义域名
 5. 设置 GitHub Actions 变量
 
-**唯一需要手动的步骤**：在新 repo 的 Settings → Secrets 中添加 `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`。
+**完全自动化**：Secrets 会由 `new-client.js` 自动配置（需要 `pip3 install pynacl`）。
 
 ### 输出示例
 
