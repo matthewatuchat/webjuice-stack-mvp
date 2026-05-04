@@ -13,6 +13,25 @@ B2B 公司官网批量生产模板。Astro + Cloudflare，无数据库、无 Wor
 
 ---
 
+
+
+---
+
+## 设计规范（强制）
+
+所有 WebJuice 网站设计必须遵循 **webjuice-design** skill，基于 huashu-design + open-design。
+
+核心要求：
+- 事实验证先于假设（涉及具体品牌/产品时必须 WebSearch）
+- 品牌资产协议：Logo > 产品图 > UI 截图 > 色值 > 字体
+- 反 AI slop：禁止紫色渐变、Emoji 图标、SVG 手画代替真实产品图
+- Junior Designer 模式：先展示假设，等确认后再执行
+
+详见：
+- huashu-design: https://github.com/alchaincyf/huashu-design/blob/main/SKILL.md
+- open-design: https://github.com/nexu-io/open-design/tree/main/skills
+
+---
 ## 技术架构
 
 | 层级 | 技术 | 用途 | 费用 |
