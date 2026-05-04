@@ -219,14 +219,14 @@ async function setupSecrets(repoFullName) {
   }
   
   const { execSync } = require('child_process');
-  const scriptPath = require('path').join(__dirname, 'setup-github-secrets.py');
+  const scriptPath = require('path').join(__dirname, 'setup-github-secrets.js');
   
   try {
-    execSync(`python3 "${scriptPath}" "${repoFullName}" CLOUDFLARE_API_TOKEN "${cfToken}"`, {
+    execSync(`node "${scriptPath}" "${repoFullName}" CLOUDFLARE_API_TOKEN "${cfToken}"`, {
       stdio: 'inherit',
       env: { ...process.env, GH_PAT: process.env.GH_PAT }
     });
-    execSync(`python3 "${scriptPath}" "${repoFullName}" CLOUDFLARE_ACCOUNT_ID "${cfAccount}"`, {
+    execSync(`node "${scriptPath}" "${repoFullName}" CLOUDFLARE_ACCOUNT_ID "${cfAccount}"`, {
       stdio: 'inherit',
       env: { ...process.env, GH_PAT: process.env.GH_PAT }
     });
