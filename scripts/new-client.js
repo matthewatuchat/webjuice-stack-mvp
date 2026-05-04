@@ -206,6 +206,37 @@ async function updateRepoVars(repoFullName, slug, domain) {
   }
 }
 
+
+async function setupSecrets(repoFullName) {
+  console.log(`[6/7] Setting GitHub Secrets...`);
+  
+  const cfToken = process.env.CF_API_TOKEN;
+  const cfAccount = process.env.CF_ACCOUNT_ID;
+  
+  if (!cfToken || !cfAccount) {
+    console.log(`  ⚠️  Skipping secrets (CF_API_TOKEN or CF_ACCOUNT_ID not set)`);
+    return;
+  }
+  
+  const { execSync } = require('child_process');
+  const scriptPath = require('path').join(__dirname, 'setup-github-secrets.py');
+  
+  try {
+    execSync(`python3 "${scriptPath}" "${repoFullName}" CLOUDFLARE_API_TOKEN "${cfToken}"`, {
+      stdio: 'inherit',
+      env: { ...process.env, GH_PAT: process.env.GH_PAT }
+    });
+    execSync(`python3 "${scriptPath}" "${repoFullName}" CLOUDFLARE_ACCOUNT_ID "${cfAccount}"`, {
+      stdio: 'inherit',
+      env: { ...process.env, GH_PAT: process.env.GH_PAT }
+    });
+    console.log(`  ✓ Secrets configured`);
+  } catch (e) {
+    console.log(`  ⚠️  Secret setup failed: ${e.message}`);
+    console.log(`     You will need to manually add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID`);
+  }
+}
+
 function printNextSteps(repoUrl, slug, domain) {
   console.log(`\n[7/7] Done!\n`);
   console.log(`Repository: ${repoUrl}`);
@@ -249,6 +280,7 @@ async function main() {
     await createPagesProject(args.slug);
     await addPagesDomain(args.slug, args.domain);
     await updateRepoVars(repoFullName, args.slug, args.domain);
+    await setupSecrets(repoFullName);
     printNextSteps(repo.html_url, args.slug, args.domain);
   } catch (err) {
     console.error('\n❌ Failed:', err.message);
