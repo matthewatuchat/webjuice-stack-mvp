@@ -183,20 +183,20 @@ export const siteConfig: SiteConfig = {
     
     // 5. Set GitHub Secrets (if pynacl is available)
     try {
-      const secretsScript = path.join(__dirname, 'setup-github-secrets.py');
+      const secretsScript = path.join(__dirname, 'setup-github-secrets.js');
       if (fs.existsSync(secretsScript)) {
-        execSync(`python3 "${secretsScript}" "${repoFullName}" CLOUDFLARE_API_TOKEN "${CF_TOKEN}"`, {
+        execSync(`node "${secretsScript}" "${repoFullName}" CLOUDFLARE_API_TOKEN "${CF_TOKEN}"`, {
           stdio: 'pipe',
           env: { ...process.env, GH_PAT },
         });
-        execSync(`python3 "${secretsScript}" "${repoFullName}" CLOUDFLARE_ACCOUNT_ID "${CF_ACCOUNT}"`, {
+        execSync(`node "${secretsScript}" "${repoFullName}" CLOUDFLARE_ACCOUNT_ID "${CF_ACCOUNT}"`, {
           stdio: 'pipe',
           env: { ...process.env, GH_PAT },
         });
         console.log('  Secrets set');
       }
     } catch (e) {
-      console.log('  Secrets need manual setup (pynacl not available)');
+      console.log('  Secrets need manual setup (tweetnacl not available. Run: npm install tweetnacl)');
     }
     
     return {
